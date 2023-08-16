@@ -1,7 +1,7 @@
 from AI21 import LLM
 from typing import Union
 from fastapi import FastAPI
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, root_validator
 from log import log
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -10,7 +10,12 @@ status = True
 class Item(BaseModel):
     APIkey:str
     question:str
-
+    @root_validator (pre=True)
+    def change_input_data(cls, v):
+        if len(v) < 2:
+            raise ValueError("Both the fields are required")
+        return v
+        
 app = FastAPI()
 
 @app.exception_handler(RequestValidationError)
@@ -30,6 +35,10 @@ async def validation_exception_handler(request, exc):
 #     if len(v) < 2:
 #         raise ValueError("At least 2 options are required")
 #     return v
+@app.get("/",status_code=200)
+def status():
+    return{"status":200}
+
 
 @app.post("/items")
 async def RequestedData(item:Item):
