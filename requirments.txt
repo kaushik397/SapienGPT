@@ -1,5 +1,6 @@
 uvicorn
 fastapi
-langchain
 ai21
-pydantic
+Python==3.7.12
+langchain==0.0.27
+pydantic==1.10.9

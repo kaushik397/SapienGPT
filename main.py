@@ -1,7 +1,7 @@
 from AI21 import LLM
 from typing import Union
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from log import log
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -25,11 +25,14 @@ async def validation_exception_handler(request, exc):
         status_code=422,
         content={'detail': 'Validation error', 'errors': errors},
     )
+# @ValidationError(pre=True)
+# def validate_options(cls, v, values):
+#     if len(v) < 2:
+#         raise ValueError("At least 2 options are required")
+#     return v
 
 @app.post("/items")
 async def RequestedData(item:Item):
-    # if 'name' not in item:
-    #     raise RequestValidationError(errors=[{'loc': ['name'], 'msg': 'field required'}])
     item=item.dict()
     print(item)
     apikey=item['APIkey']
