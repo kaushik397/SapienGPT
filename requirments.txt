@@ -2,3 +2,4 @@ uvicorn
 fastapi
 langchain
 ai21
+pydantic

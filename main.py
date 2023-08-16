@@ -10,9 +10,9 @@ class Item(BaseModel):
     question:str
 
 app = FastAPI()
-@app.get("/api/v1/home")
+@app.get("/api/v1/")
 def read_root():
-    return {"Hello": "you have reached testing playground for LLM back ground"}
+    return {"200": "OK"}
 
 @app.post("/api/v1/items/")
 async def RequestedData(item:Item):
