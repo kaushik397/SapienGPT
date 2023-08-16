@@ -10,7 +10,7 @@ status = True
 class Item(BaseModel):
     APIkey:str
     question:str
-    @root_validator (pre=True)
+    @root_validator (pre=True,skip_on_failure=True)
     def change_input_data(cls, v):
         if len(v) < 2:
             raise ValueError("Both the fields are required")
