@@ -3,6 +3,8 @@ from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 from log import log
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 #data type
 status = True
 class Item(BaseModel):
@@ -10,13 +12,31 @@ class Item(BaseModel):
     question:str
 
 app = FastAPI()
-@app.get("/api/v1/")
-def read_root():
-    return {"200": "OK"}
 
-@app.post("/api/v1/items/")
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    errors = []
+    for error in exc.errors():
+        field = '.'.join(error['loc'])
+        message = error['msg']
+        errors.append({'field': field, 'message': message})
+
+    return JSONResponse(
+        status_code=422,
+        content={'detail': 'Validation error', 'errors': errors},
+    )
+
+@app.post("/items")
 async def RequestedData(item:Item):
-    apikey=item.APIkey
-    question=item.question
+    # if 'name' not in item:
+    #     raise RequestValidationError(errors=[{'loc': ['name'], 'msg': 'field required'}])
+    item=item.dict()
+    print(item)
+    apikey=item['APIkey']
+    question=item['question']
     log(data=f"{apikey,question}",status=status)
-    return LLM(question=question,apikey=apikey,status=status)
+    response = LLM(question=question,apikey=apikey,status=status)
+    if response!='':
+        return response
+    else:
+        return {"question":"invalid"}
