@@ -49,6 +49,6 @@ async def RequestedData(item:Item):
     log(data=f"{apikey,question}",status=status)
     response = LLM(question=question,apikey=apikey,status=status)
     if response!='':
-        return response
+        return {"response":response}
     else:
         return {"question":"invalid"}
