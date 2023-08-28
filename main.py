@@ -1,12 +1,13 @@
 from AI21 import LLM
 from typing import Union
-from fastapi import FastAPI
+from fastapi import FastAPI,File, UploadFile
 from pydantic import BaseModel, ValidationError, root_validator
 from log import log
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+import os
 #data type
-status = True
+status = False
 class Item(BaseModel):
     APIkey:str
     question:str
@@ -17,7 +18,6 @@ class Item(BaseModel):
         return v
         
 app = FastAPI()
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     errors = []
@@ -30,16 +30,18 @@ async def validation_exception_handler(request, exc):
         status_code=422,
         content={'detail': 'Validation error', 'errors': errors},
     )
-# @ValidationError(pre=True)
-# def validate_options(cls, v, values):
-#     if len(v) < 2:
-#         raise ValueError("At least 2 options are required")
-#     return v
+#basic health check
 @app.get("/",status_code=200)
 def status():
     return{"status":200}
+# below is audio file related code
 
+@app.get("/get_audio/")
+async def get_audio():
+    file_path = os.path.join("temp", "output.mp3")  # Replace with the actual file path
+    return FileResponse(file_path, headers={"Content-Disposition": "attachment; filename=output.mp3"})
 
+#items
 @app.post("/items")
 async def RequestedData(item:Item):
     item=item.dict()
@@ -47,7 +49,7 @@ async def RequestedData(item:Item):
     apikey=item['APIkey']
     question=item['question']
     log(data=f"{apikey,question}",status=status)
-    response = LLM(question=question,apikey=apikey,status=status)
+    response = LLM(question=question,apikey=apikey,status=True)
     if response!='':
         return {"response":response}
     else:
